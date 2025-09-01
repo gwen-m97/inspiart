@@ -1,0 +1,19 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 2rem;
+}
+
+#results img {
+  width: 150px;
+  height: auto;
+  margin: 10px;
+  border: 1px solid #ccc;
+}
+
+#logo {
+  width: 150px;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
+    }
