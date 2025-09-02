@@ -3,6 +3,9 @@
 import kagglehub
 from kagglehub import KaggleDatasetAdapter
 import pandas as pd
+import numpy as np
+import os
+import requests
 
 def load_data() :
     """load the dataframe from kaggle"""
@@ -70,3 +73,68 @@ def merging_metadata(df: pd.DataFrame) :
     df_merged = df_merged.set_index("file_name", drop=False)
 
     return df_merged
+
+
+def data_sampling(df: pd.DataFrame, sample_size, number_styles=10) :
+    """create a sample in the dataframe with the top number_styles chosen (bu default 10) and of the chosen sample_size"""
+
+    styles_count = pd.DataFrame(df['style'].value_counts())
+    top_styles = list(styles_count.head(number_styles).index)
+    df_topstyles = df[df['style'].isin(top_styles)]
+
+    highest = df_topstyles.shape[0]-1
+
+    # To have always the same numbers
+    np.random.seed(42)
+
+    sample_num = np.random.randint(0, highest, size=sample_size).tolist()
+    df_sample_topstyles = df_topstyles.iloc[sample_num]
+
+    return df_sample_topstyles
+
+
+def data_sampling_csv(df: pd.DataFrame, sample_size, number_styles=10) :
+    """create a sample in the dataframe with the top number_styles chosen (bu default 10) and of the chosen sample_size
+    Create a CSV"""
+
+    styles_count = pd.DataFrame(df['style'].value_counts())
+    top_styles = list(styles_count.head(number_styles).index)
+    df_topstyles = df[df['style'].isin(top_styles)]
+
+    highest = df_topstyles.shape[0]-1
+
+    # To have always the same numbers
+    np.random.seed(42)
+
+    sample_num = np.random.randint(0, highest, size=sample_size).tolist()
+    df_sample_topstyles = df_topstyles.iloc[sample_num]
+
+    file_path=f"data_sampling{sample_size}_topstyles{number_styles}.csv"
+    df_sample_topstyles.to_csv(file_path, index=False)
+
+
+
+def download_sample_df(df, destination_path) :
+    """allow ro download the sample created in a dataframe"""
+    # Dossier de destination
+    os.makedirs(destination_path, exist_ok=True)
+
+    # Liste pour stocker les échecs
+    failed_downloads = []
+
+    for url, file_name in zip(df['img'], df['file_name']):
+        file_path = os.path.join(destination_path, file_name)
+
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            with open(file_path, "wb") as f:
+                f.write(response.content)
+            print(f"Downloaded : {file_name}")
+        except requests.exceptions.RequestException as e:
+            print(f"Impossible to download : {file_name}. Reason : {e}")
+            failed_downloads.append(file_name)
+
+    print("Images are downloaded.")
+    print(f"\nTotal failed downloads: {len(failed_downloads)}")
+    print("Failed files:", failed_downloads)
