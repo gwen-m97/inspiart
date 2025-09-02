@@ -65,7 +65,7 @@ def merging_metadata(df: pd.DataFrame) :
     df2 = df2.drop_duplicates(subset=['img'], keep='first')
 
     # merging
-    df_merged = df_filtered.merge(df2, how='left', on='img')
+    df_merged = df.merge(df2, how='left', on='img')
     df_merged = df_merged.drop(columns=['Style', 'Artist'])
 
     return df_merged
