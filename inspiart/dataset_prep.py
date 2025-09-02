@@ -67,5 +67,6 @@ def merging_metadata(df: pd.DataFrame) :
     # merging
     df_merged = df.merge(df2, how='left', on='img')
     df_merged = df_merged.drop(columns=['Style', 'Artist'])
+    df_merged = df_merged.set_index("file_name", drop=False)
 
     return df_merged
