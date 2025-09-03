@@ -45,7 +45,7 @@ class GoogleVITHuge224Embedding(EmbeddingFunction):
 
 image_folder = '/Users/shogun/code/gwen-m97/raw_data/Pop_Art'
 
-images = [img for img in sorted(os.listdir(image_folder)) if img.endswith('.jpg')]
+images = [img for img in os.listdir(image_folder) if img.endswith('.jpg')]
 
 image_loader = ImageLoader()
 
@@ -57,7 +57,7 @@ images_db = chroma_client.get_or_create_collection(name="images_db", embedding_f
 
 print("START")
 
-count = 194
+count = 5000
 
 for image in images:
 
@@ -71,7 +71,7 @@ for image in images:
 
     images_db.add(
         ids = [f"{count}"],
-        uris = [image_path],
+        uris = [f"{image_path}"],
         metadatas=[{'image': image, 'url': image_path}]
     )
 
