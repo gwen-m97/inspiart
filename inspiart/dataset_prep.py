@@ -74,43 +74,109 @@ def merging_metadata(df: pd.DataFrame) :
 
     return df_merged
 
+def data_sampling_balanced(df: pd.DataFrame, sample_size, number_styles=10):
+    """
+    Create a balanced sample in the dataframe:
+    - Select the top `number_styles` (by frequency)
+    - Sample the same number of rows from each style
+    """
 
-def data_sampling(df: pd.DataFrame, sample_size, number_styles=10) :
-    """create a sample in the dataframe with the top number_styles chosen (bu default 10) and of the chosen sample_size"""
-
-    styles_count = pd.DataFrame(df['style'].value_counts())
-    top_styles = list(styles_count.head(number_styles).index)
+    # Identifier les styles les plus fréquents
+    top_styles = df['style'].value_counts().head(number_styles).index
     df_topstyles = df[df['style'].isin(top_styles)]
 
-    highest = df_topstyles.shape[0]-1
+    # Nombre de lignes à tirer par style
+    n_per_style = sample_size // number_styles
 
-    # To have always the same numbers
-    np.random.seed(42)
+    # Tirage équilibré
+    df_samples = []
+    for style in top_styles:
+        df_style = df_topstyles[df_topstyles['style'] == style]
 
-    sample_num = np.random.randint(0, highest, size=sample_size).tolist()
-    df_sample_topstyles = df_topstyles.iloc[sample_num]
+        # On prend min(n_per_style, len(df_style)) pour éviter une erreur
+        sample_style = df_style.sample(
+            n=min(n_per_style, len(df_style)),
+            random_state=42,
+            replace=False
+        )
+        df_samples.append(sample_style)
 
+    # Concaténer le tout
+    df_balanced = pd.concat(df_samples, axis=0).reset_index(drop=True)
+    print(f"created a dataframe of {len(df_balanced)} lines across {number_styles} styles, BALANCED")
+    return df_balanced
+
+
+def data_sampling_balanced_csv(df: pd.DataFrame, sample_size, number_styles=10):
+    """
+    Create a balanced sample in the dataframe:
+    - Select the top `number_styles` (by frequency)
+    - Sample the same number of rows from each style
+    """
+
+    # Identifier les styles les plus fréquents
+    top_styles = df['style'].value_counts().head(number_styles).index
+    df_topstyles = df[df['style'].isin(top_styles)]
+
+    # Nombre de lignes à tirer par style
+    n_per_style = sample_size // number_styles
+
+    # Tirage équilibré
+    df_samples = []
+    for style in top_styles:
+        df_style = df_topstyles[df_topstyles['style'] == style]
+
+        # On prend min(n_per_style, len(df_style)) pour éviter une erreur
+        sample_style = df_style.sample(
+            n=min(n_per_style, len(df_style)),
+            random_state=42,
+            replace=False
+        )
+        df_samples.append(sample_style)
+
+    # Concaténer le tout
+    df_balanced = pd.concat(df_samples, axis=0).reset_index(drop=True)
+    file_path=f"data_sampling{sample_size}_topstyles{number_styles}.csv"
+    df_balanced.to_csv(file_path, index=False)
+    print(f"created a csv of {len(df_balanced)} lines across {number_styles} styles, BALANCED")
+
+
+def data_sampling(df: pd.DataFrame, sample_size=200, number_styles=10) :
+    """create a sample in the dataframe with the top number_styles chosen (bu default 10) and of the chosen sample_size"""
+
+    # Identifier les styles les plus fréquents
+    top_styles = df['style'].value_counts().head(number_styles).index
+    df_topstyles = df[df['style'].isin(top_styles)]
+
+    # Tirer un échantillon sans doublons
+    df_sample_topstyles = df_topstyles.sample(
+        n=sample_size,
+        random_state=42,
+        replace=False
+    )
+
+    print(f"!! UNBALANCED DATA. Created a dataframe of {len(df_sample_topstyles)} lines across {number_styles} styles")
     return df_sample_topstyles
 
 
-def data_sampling_csv(df: pd.DataFrame, sample_size, number_styles=10) :
+def data_sampling_csv(df: pd.DataFrame, sample_size=200, number_styles=10) :
     """create a sample in the dataframe with the top number_styles chosen (bu default 10) and of the chosen sample_size
     Create a CSV"""
 
-    styles_count = pd.DataFrame(df['style'].value_counts())
-    top_styles = list(styles_count.head(number_styles).index)
+    # Identifier les styles les plus fréquents
+    top_styles = df['style'].value_counts().head(number_styles).index
     df_topstyles = df[df['style'].isin(top_styles)]
 
-    highest = df_topstyles.shape[0]-1
-
-    # To have always the same numbers
-    np.random.seed(42)
-
-    sample_num = np.random.randint(0, highest, size=sample_size).tolist()
-    df_sample_topstyles = df_topstyles.iloc[sample_num]
+    # Tirer un échantillon sans doublons
+    df_sample_topstyles = df_topstyles.sample(
+        n=sample_size,
+        random_state=42,
+        replace=False
+    )
 
     file_path=f"data_sampling{sample_size}_topstyles{number_styles}.csv"
     df_sample_topstyles.to_csv(file_path, index=False)
+    print(f"!! UNBALANCED DATA. Created a dataframe of {len(df_sample_topstyles)} lines across {number_styles} styles")
 
 
 
