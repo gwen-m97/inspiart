@@ -43,17 +43,19 @@ class GoogleVITHuge224Embedding(EmbeddingFunction):
 
 
 
-image_folder = '/Users/shogun/code/gwen-m97/raw_data/Pop_Art'
+image_folder = '/Users/shogun/code/gwen-m97/raw_data/sample1000'
 
-images = [img for img in os.listdir(image_folder) if img.endswith('.jpg')]
+images = [img for img in sorted(os.listdir(image_folder)) if img.endswith('.jpg')]
 
 image_loader = ImageLoader()
 
 image_embbeding_function = GoogleVITHuge224Embedding()
 
-chroma_client = chromadb.PersistentClient(path='my_vectordb')
+chroma_client = chromadb.PersistentClient(path='/Users/shogun/code/gwen-m97/inspiart/models/google_vit_sample1000_db')
 
-images_db = chroma_client.get_or_create_collection(name="images_db", embedding_function=image_embbeding_function, data_loader=image_loader)
+images_db = chroma_client.get_or_create_collection(name="google_vit_sample1000_collection", embedding_function=image_embbeding_function, data_loader=image_loader)
+
+sample_data = pd.read_csv('/Users/shogun/code/gwen-m97/inspiart/raw_data/data_sampling1000_topstyles10.csv')
 
 print("START")
 
@@ -69,10 +71,22 @@ for image in images:
 
     #image_pil.show()
 
+    meta_data_row = sample_data.query(f"file_name == '{image}'")
+
+    metadata= {'image_path' : image_path,
+                    'artist': meta_data_row['artist'].values[0],
+                    'style' : meta_data_row['style'].values[0],
+                    'movement' : meta_data_row['movement'].values[0],
+                    'url': meta_data_row['url'].values[0],
+                    'img' : meta_data_row['img'].values[0],
+                    'file_name' : meta_data_row['file_name'].values[0]}
+
+    print(metadata)
+
     images_db.add(
-        ids = [f"{count}"],
-        uris = [f"{image_path}"],
-        metadatas=[{'image': image, 'url': image_path}]
+        ids = [image],
+        uris = [image_path],
+        metadatas=[metadata]
     )
 
     count +=1

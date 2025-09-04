@@ -74,23 +74,43 @@ async def receive_image(img: UploadFile=File(...)):
 
     ### Do cool stuff with your image.... For example face detection
 
-    #chroma_client = chromadb.PersistentClient(path='/Users/shogun/code/gwen-m97/inspiart/raw_data/my_vectordb')
-    #image_loader = ImageLoader()
+    #instantiate the image loader that ChromaDB uses to load pictures
 
-    #image_embbeding_function = GoogleVITHuge224Embedding()
-    #images_db = chroma_client.get_or_create_collection(name="images_db", embedding_function=image_embbeding_function, data_loader=image_loader)
-    #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Two_Young_Girls_at_the_Piano_MET_rl1975.1.201.R.jpg'
+image_loader = ImageLoader()
 
-    #image_suggestions = images_db.query(
+#intantiate the custom embedding function
 
-    #query_uris=[query_uris]
-#)
+image_embbeding_function = GoogleVITHuge224Embedding()
+
+#connect to the database
+
+chroma_client = chromadb.PersistentClient(path='/Users/shogun/code/gwen-m97/inspiart/models/google_vit_sample1000_db')
+
+#connect to the correct collection
+
+images_db = chroma_client.get_or_create_collection(name="google_vit_sample1000_collection", embedding_function=image_embbeding_function, data_loader=image_loader)
+
+#test picture string
+
+query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Two_Young_Girls_at_the_Piano_MET_rl1975.1.201.R.jpg'
+#query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Piet_Mondriaan,_1942_-_New_York_City_I.jpg'
+#query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Paul_Cézanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg'
+#query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg'
+
+#perform the query
+
+image_suggestions = images_db.query(
+    query_uris=[query_uris], include=['uris','metadatas']
+)
+
+#url=f"{image_suggestions['metadatas'][0][9]['img']}"
+image = image_suggestions['uris'][0][9]
 
 #    print(image_suggestions)
 
     #annotated_img = cv2_img
 
     ### Encoding and responding with the image
-    im = cv2.imencode('.jpg', cv2_img)[1] # extension depends on which format is sent from Streamlit
+    im = cv2.imencode('.jpg', image)[1] # extension depends on which format is sent from Streamlit
     #return image_suggestions
     return Response(content=im.tobytes(), media_type="image/jpg")
