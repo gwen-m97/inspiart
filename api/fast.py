@@ -93,4 +93,4 @@ async def receive_image(img: UploadFile=File(...)):
     ### Encoding and responding with the image
     im = cv2.imencode('.jpg', cv2_img)[1] # extension depends on which format is sent from Streamlit
     #return image_suggestions
-    Response(content=im.tobytes(), media_type="image/jpg")
+    return Response(content=im.tobytes(), media_type="image/jpg")
