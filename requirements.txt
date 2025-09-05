@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+httpx
+opencv-python
+transformers
+chromadb
+streamlit
+watchdog
+requests
+pandas
+datetime
