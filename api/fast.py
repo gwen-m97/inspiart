@@ -5,14 +5,16 @@ from starlette.responses import Response
 import PIL.Image as Image
 
 import numpy as np
-import cv2
+#import cv2
 import io
 
-from transformers import ViTImageProcessor, ViTModel, ViTImageProcessorFast
+from transformers import ViTModel, ViTImageProcessorFast
 
 import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
 from chromadb.utils.data_loaders import ImageLoader
+
+import json
 
 #from face_rec.face_detection import annotate_face
 
@@ -66,11 +68,11 @@ def index():
 
 @app.post('/upload_image')
 async def receive_image(img: UploadFile=File(...)):
-    print(type(img))
+    #print(type(img))
     ### Receiving and decoding the image
     #contents = img.file.read()
     contents = img.file.read()
-    print(type(contents))
+    #print(type(contents))
     #nparr = np.fromstring(contents, np.uint8)
     #cv2_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR) # type(cv2_img) => numpy.ndarray
 
@@ -78,9 +80,12 @@ async def receive_image(img: UploadFile=File(...)):
 
     # save a local copy of the file to get the uri
 
+    #home_dir = os.path.expanduser('~')
+    #print(f"The expanded home directory is: {home_dir}")
+
     working_image = Image.open(io.BytesIO(contents))
 
-    directory = '/Users/shogun/code/gwen-m97/inspiart/api/working_directory/working_image.jpg'
+    directory = './api/working_directory/working_image.jpg'
 
     working_image.save(directory)
 
@@ -94,7 +99,7 @@ async def receive_image(img: UploadFile=File(...)):
 
 #connect to the database
 
-    chroma_client = chromadb.PersistentClient(path='/Users/shogun/code/gwen-m97/inspiart/models/google_vit_sample1000_db')
+    chroma_client = chromadb.PersistentClient(path='./models/google_vit_sample1000_db')
 
 #connect to the correct collection
 
@@ -106,7 +111,7 @@ async def receive_image(img: UploadFile=File(...)):
     #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Piet_Mondriaan,_1942_-_New_York_City_I.jpg'
     #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Paul_Cézanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg'
     #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg'
-    query_uris = '/Users/shogun/code/gwen-m97/inspiart/api/working_directory/working_image.jpg'
+    query_uris = './api/working_directory/working_image.jpg'
 
 #perform the query
 
@@ -122,6 +127,8 @@ async def receive_image(img: UploadFile=File(...)):
                   'image_5': image_suggestions['metadatas'][0][4]['img']
                   }
 
+    return_json = json.dumps(image_dict, indent=4)
+
     #annotated_img = cv2_img
 
     ### Encoding and responding with the image
@@ -131,4 +138,4 @@ async def receive_image(img: UploadFile=File(...)):
 
     os.remove(query_uris)
 
-    return image_dict
+    return return_json
