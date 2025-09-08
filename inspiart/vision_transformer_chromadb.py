@@ -8,7 +8,7 @@ import requests
 import pandas as pd
 import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
-from chromadb.utils.data_loaders import ImageLoader
+from chromadb.utils.data_loaders import ImageLoaderdark skin ebony girl
 
 #from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 
@@ -16,7 +16,7 @@ class GoogleVITHuge224Embedding(EmbeddingFunction):
 
 
     def __call__(self, input: Documents) -> Embeddings:
-
+c
         from transformers import ViTImageProcessor, ViTModel, ViTImageProcessorFast
 
         #Instantiate the image. Convert it to 244 x 244 and normalise RGB between 0 and 1 witha mean of 0.5 for each channel
