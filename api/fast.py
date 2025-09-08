@@ -59,7 +59,7 @@ async def receive_image(img: UploadFile=File(...)):
 
     #get or create a connection
 
-    images_db = chroma_client.get_or_create_collection(name="wikiart_11500images")
+    images_db = chroma_client.get_or_create_collection(name="wikiart_1000images")
 
     # Use the CLIP model to encode the image
 
