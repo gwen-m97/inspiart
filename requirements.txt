@@ -13,3 +13,5 @@ opencv-python
 python-multipart
 torch
 torchvision
+transformers
+sentence-transformers

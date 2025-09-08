@@ -24,6 +24,7 @@ from chromadb.utils.data_loaders import ImageLoader
 import json
 
 app = FastAPI()
+app.state.model = SentenceTransformer('clip-ViT-B-32')
 
 # # Allow all requests (optional, good for development purposes)
 app.add_middleware(
@@ -47,9 +48,11 @@ async def receive_image(img: UploadFile=File(...)):
 
     working_image = Image.open(io.BytesIO(contents))
 
+    print("we have an image")
+
     #instantiate the image loader that ChromaDB uses to load pictures
 
-    image_loader = ImageLoader()
+    #image_loader = ImageLoader()
 
     #connect to the database
 
@@ -59,16 +62,22 @@ async def receive_image(img: UploadFile=File(...)):
         database='inspiart'
         )
 
+    print("have a connection to db")
+
     #connect to the correct collection
 
-    images_db = chroma_client.get_or_create_collection(name="wikiart_1000images", data_loader=image_loader)
+    images_db = chroma_client.get_or_create_collection(name="wikiart_1000images") #, data_loader=image_loader)
+
+    print("we have a client")
 
     #instantiate the model
 
-    model = SentenceTransformer('clip-ViT-B-32')
+    #model = SentenceTransformer('clip-ViT-B-32')
 
     # Use the CLIP model to encode the image
-    query_embedding = model.encode(working_image).tolist()
+    query_embedding = app.state.model.encode(working_image).tolist()
+
+    print("we have a query")
 
     #perform the query
 
@@ -77,17 +86,17 @@ async def receive_image(img: UploadFile=File(...)):
     include=['uris','metadatas'],
     n_results=5
 )
+    print(image_suggestions)
 
-
-    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img'],
-                  'image_2': image_suggestions['metadatas'][0][1]['img'],
-                  'image_3': image_suggestions['metadatas'][0][2]['img'],
-                  'image_4': image_suggestions['metadatas'][0][3]['img'],
-                  'image_5': image_suggestions['metadatas'][0][4]['img']
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['url']
                   }
 
-    return_json = json.dumps(image_dict, indent=4)
+    print("we have a dictionary")
 
-    os.remove(query_uris)
+    return_json = json.dumps(image_dict, indent=4)
 
     return return_json
