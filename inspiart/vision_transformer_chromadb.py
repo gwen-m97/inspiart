@@ -43,7 +43,7 @@ class GoogleVITHuge224Embedding(EmbeddingFunction):
 
 
 
-image_folder = '/Users/shogun/code/gwen-m97/raw_data/sample1000'
+image_folder = '/Users/shogun/code/gwen-m97/inspiart/raw_data/image_database'
 
 images = [img for img in sorted(os.listdir(image_folder)) if img.endswith('.jpg')]
 
@@ -51,15 +51,16 @@ image_loader = ImageLoader()
 
 image_embbeding_function = GoogleVITHuge224Embedding()
 
-chroma_client = chromadb.PersistentClient(path='/Users/shogun/code/gwen-m97/inspiart/models/google_vit_sample1000_db')
+chroma_client = chromadb.PersistentClient(path='/Users/shogun/code/gwen-m97/inspiart/models/google_vit_12000_db')
 
-images_db = chroma_client.get_or_create_collection(name="google_vit_sample1000_collection", embedding_function=image_embbeding_function, data_loader=image_loader)
+images_db = chroma_client.get_or_create_collection(name="google_vit_12000_collection", embedding_function=image_embbeding_function, data_loader=image_loader)
 
-sample_data = pd.read_csv('/Users/shogun/code/gwen-m97/inspiart/raw_data/data_sampling1000_topstyles10.csv')
+sample_data = pd.read_csv('/Users/shogun/code/gwen-m97/inspiart/notebooks/df_filtered_random.csv')
 
 print("START")
 
 count = 5000
+
 
 for image in images:
 
