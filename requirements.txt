@@ -9,3 +9,7 @@ watchdog
 requests
 pandas
 datetime
+opencv-python
+python-multipart
+torch
+torchvision
