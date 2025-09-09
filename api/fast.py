@@ -80,8 +80,6 @@ async def receive_image(img: UploadFile=File(...)):
     n_results=5
     )
 
-    print(image_suggestions)
-
     #create a dictionary of the results
 
     image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
@@ -92,15 +90,25 @@ async def receive_image(img: UploadFile=File(...)):
                   }
     #create a json of the dictionary
 
-    print(image_dict)
+    image_dict = {}
 
-    return_json = json.dumps(image_dict, indent=4)
+    for i in range(5) :
+        key=f"image_{i}"
+        image_dict[key] = {
+            "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+            "artist" : image_suggestions['metadatas'][0][i]['artist'],
+            "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+            "style" : image_suggestions['metadatas'][0][i]['style']
+            }
 
-    print(return_json)
+    final_dict = {"style_predicted" : None, "images" : image_dict}
+
+    return_json = json.dumps(final_dict)
 
     #return the dictionary
 
     return return_json
+
 
 
 @app.post('/upload_same_style')
@@ -163,19 +171,27 @@ async def receive_image(img: UploadFile=File(...)):
 
     #create a dictionary of the results
 
-    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
-                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
-                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
-                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
-                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
-                  }
+    image_dict = {}
+
+    for i in range(5) :
+        key=f"image_{i}"
+        image_dict[key] = {
+            "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+            "artist" : image_suggestions['metadatas'][0][i]['artist'],
+            "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+            "style" : image_suggestions['metadatas'][0][i]['style']
+            }
+
+    final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
+
     #create a json of the dictionary
 
-    return_json = json.dumps(image_dict, indent=4)
+    return_json = json.dumps(final_dict)
 
     #return the dictionary
 
     return return_json
+
 
 
 @app.post('/upload_other_style')
@@ -238,15 +254,22 @@ async def receive_image(img: UploadFile=File(...)):
 
     #create a dictionary of the results
 
-    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
-                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
-                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
-                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
-                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
-                  }
+    image_dict = {}
+
+    for i in range(5) :
+        key=f"image_{i}"
+        image_dict[key] = {
+            "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+            "artist" : image_suggestions['metadatas'][0][i]['artist'],
+            "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+            "style" : image_suggestions['metadatas'][0][i]['style']
+            }
+
+    final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
+
     #create a json of the dictionary
 
-    return_json = json.dumps(image_dict, indent=4)
+    return_json = json.dumps(final_dict)
 
     #return the dictionary
 
