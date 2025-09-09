@@ -49,3 +49,5 @@ secrets.toml
 *.sqlite3
 my_vectordb/
 models/
+
+OLD/

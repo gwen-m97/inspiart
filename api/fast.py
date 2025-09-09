@@ -5,20 +5,34 @@ from starlette.responses import Response
 import PIL.Image as Image
 
 import numpy as np
-#import cv2
 import io
+import transformers
 
-from transformers import ViTModel, ViTImageProcessorFast
+from sentence_transformers import SentenceTransformer, util
+import os
+from dotenv import load_dotenv
+import torch
+#import pandas as pd
+import numpy as np
+from PIL import Image
+#import requests
+#import matplotlib.pyplot as plt
 
 import chromadb
-from chromadb import Documents, EmbeddingFunction, Embeddings
-from chromadb.utils.data_loaders import ImageLoader
+#from chromadb import Documents, EmbeddingFunction, Embeddings
+#from chromadb.utils.data_loaders import ImageLoader
 
 import json
 
-#from face_rec.face_detection import annotate_face
+#imports for the style model
+
+from keras.applications.xception import preprocess_input
+import tensorflow as tf
 
 app = FastAPI()
+app.state.model = SentenceTransformer('clip-ViT-B-32')
+app.state.model_keras = keras.models.load_model("../models/model_Xception_alldata.keras")
+
 
 # # Allow all requests (optional, good for development purposes)
 app.add_middleware(
@@ -29,113 +43,184 @@ app.add_middleware(
      allow_headers=["*"],  # Allows all headers
  )
 
-class GoogleVITHuge224Embedding(EmbeddingFunction):
-
-    '''
-    A class to provide custom embeddings to a ChromaDB database
-    embedding images using the Google vit-huge-patch14-224-in21k
-    the class returns an embedding as a numpy array
-    '''
-
-
-    def __call__(self, input: Documents) -> Embeddings:
-
-        #Instantiate the image. Convert it to 244 x 244 and normalise RGB between 0 and 1 witha mean of 0.5 for each channel
-
-        self.feature_extractor = ViTImageProcessorFast.from_pretrained('google/vit-huge-patch14-224-in21k')
-
-        #Instantiate the Google ViT with pretrained weights
-
-        self.model = ViTModel.from_pretrained('google/vit-huge-patch14-224-in21k')#Preprocess the data
-
-        inputs = self.feature_extractor(images=input, return_tensors="pt")
-
-        #Embedd the data
-
-        outputs = self.model(**inputs)
-
-        #Convert the embedding to a Numpy array and take the first vector of the Transformer state
-
-        embeddings = outputs.last_hidden_state.data.numpy()[0,0]
-
-        #return the embedding
-
-        return embeddings
-
 @app.get("/")
 def index():
-    return {"status": "ok"}
+    return {"status": "ok CLIP"}
 
 @app.post('/upload_image')
 async def receive_image(img: UploadFile=File(...)):
-    #print(type(img))
-    ### Receiving and decoding the image
-    #contents = img.file.read()
+
+    #get the image from the POST request
+
     contents = img.file.read()
-    #print(type(contents))
-    #nparr = np.fromstring(contents, np.uint8)
-    #cv2_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR) # type(cv2_img) => numpy.ndarray
-
-    ### Do cool stuff with your image.... For example face detection
-
-    # save a local copy of the file to get the uri
-
-    #home_dir = os.path.expanduser('~')
-    #print(f"The expanded home directory is: {home_dir}")
 
     working_image = Image.open(io.BytesIO(contents))
 
-    directory = './api/working_directory/working_image.jpg'
+    #connect to the database
 
-    working_image.save(directory)
+    chroma_client = chromadb.CloudClient(
+        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
+        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
+        database='inspiart'
+        )
 
-    #instantiate the image loader that ChromaDB uses to load pictures
+    #get or create a connection
 
-    image_loader = ImageLoader()
+    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
 
-#intantiate the custom embedding function
+    # Use the CLIP model to encode the image
 
-    image_embbeding_function = GoogleVITHuge224Embedding()
+    query_embedding = app.state.model.encode(working_image).tolist()
 
-#connect to the database
-
-    chroma_client = chromadb.PersistentClient(path='./models/google_vit_sample1000_db')
-
-#connect to the correct collection
-
-    images_db = chroma_client.get_or_create_collection(name="google_vit_sample1000_collection", embedding_function=image_embbeding_function, data_loader=image_loader)
-
-#test picture string
-
-    #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Two_Young_Girls_at_the_Piano_MET_rl1975.1.201.R.jpg'
-    #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Piet_Mondriaan,_1942_-_New_York_City_I.jpg'
-    #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Paul_Cézanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg'
-    #query_uris = '/Users/shogun/code/gwen-m97/raw_data/test_images/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg'
-    query_uris = './api/working_directory/working_image.jpg'
-
-#perform the query
+    #perform the query
 
     image_suggestions = images_db.query(
-    query_uris=[query_uris], include=['uris','metadatas'], n_results=5
-)
+    query_embeddings=[query_embedding],
+    include=['uris','metadatas'],
+    n_results=5
+    )
 
-#url=f"{image_suggestions['metadatas'][0][9]['img']}"
-    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img'],
-                  'image_2': image_suggestions['metadatas'][0][1]['img'],
-                  'image_3': image_suggestions['metadatas'][0][2]['img'],
-                  'image_4': image_suggestions['metadatas'][0][3]['img'],
-                  'image_5': image_suggestions['metadatas'][0][4]['img']
+    print(image_suggestions)
+
+    #create a dictionary of the results
+
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
                   }
+    #create a json of the dictionary
+
+    print(image_dict)
 
     return_json = json.dumps(image_dict, indent=4)
 
-    #annotated_img = cv2_img
+    print(return_json)
 
-    ### Encoding and responding with the image
-    #im = cv2.imencode('.jpg', image)[1] # extension depends on which format is sent from Streamlit
-    #return image_suggestions
-    #return Response(image_suggestions['metadatas'][0]['img'])
+    #return the dictionary
 
-    os.remove(query_uris)
+    return return_json
+
+@app.post('/upload_same_style')
+async def receive_image(img: UploadFile=File(...)):
+
+    #get the image from the POST request
+
+    contents = img.file.read()
+
+    working_image = Image.open(io.BytesIO(contents))
+
+    #GET STYLE
+
+    #styles constant
+
+    LIST_STYLES = ['Abstract Art', 'Abstract Expressionism', 'Academicism', 'Art Deco', 'Art Informel', 'Art Nouveau (Modern)', 'Biedermeier', 'Color Field Painting', 'Conceptual Art', 'Concretism', 'Contemporary', 'Contemporary Realism', 'Cubism', 'Dada', 'Divisionism', 'Expressionism', 'Fantastic Realism', 'Fauvism', 'Figurative Expressionism', 'Futurism', 'Hard Edge Painting', 'Hyper-Realism', 'Impressionism', 'Kitsch', 'Luminism', 'Lyrical Abstraction', 'Magic Realism', 'Metaphysical art', 'Minimalism', 'Native Art', 'Naturalism', 'Naïve Art (Primitivism)', 'Neo-Dada', 'Neo-Expressionism', 'Neo-Impressionism', 'Neo-Pop Art', 'Neo-Romanticism', 'Neoclassicism', 'New European Painting', 'Op Art', 'Orientalism', 'Pop Art', 'Post-Impressionism', 'Post-Painterly Abstraction', 'Precisionism', 'Realism', 'Regionalism', 'Romanticism', 'Social Realism', 'Socialist Realism', 'Surrealism', 'Symbolism', 'Synthetic Cubism', 'Tachisme', 'Tonalism', 'Transavantgarde']
+
+    #going to find the style
+
+    #PREPROCESSING
+
+    img = working_image.convert('RGB')
+    img_resized = img.resize((224, 224), Image.BICUBIC)
+    img_array = np.array(img_resized)
+    img_preprocessed = preprocess_input(img_array)
+    img_batch = np.expand_dims(img_preprocessed, axis=0)  # shape (1,224,224,3)
+
+    #PREDICTION
+
+    preds = app.state.model_keras.predict(img_batch)
+    pred_indice = preds.argmax(axis=1)[0] #Take the number
+    style_predicted = LIST_STYLES[pred_indice]
+
+    #GET IMAGES THAT MATCH WITH STYLE AND IMAGE
+
+    #connect to the database
+
+    chroma_client = chromadb.CloudClient(
+        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
+        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
+        database='inspiart'
+        )
+
+    #get or create a connection
+
+    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+
+    # Use the CLIP model to encode the image
+
+    query_embedding = app.state.model.encode(working_image).tolist()
+
+    #perform the query
+
+    image_suggestions = images_db.query(
+    query_embeddings=[query_embedding],
+    include=['uris','metadatas'],
+    n_results=5,
+    where={"style": style_predicted}
+    )
+
+    #create a dictionary of the results
+
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
+                  }
+    #create a json of the dictionary
+
+    return_json = json.dumps(image_dict, indent=4)
+
+    #return the dictionary
+
+    return return_json
+
+@app.post('/upload_other_style')
+async def receive_image(img: UploadFile=File(...)):
+
+    #get the image from the POST request
+
+    contents = img.file.read()
+
+    working_image = Image.open(io.BytesIO(contents))
+
+    #connect to the database
+
+    chroma_client = chromadb.CloudClient(
+        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
+        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
+        database='inspiart'
+        )
+
+    #get or create a connection
+
+    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+
+    # Use the CLIP model to encode the image
+
+    query_embedding = app.state.model.encode(working_image).tolist()
+
+    #perform the query
+
+    image_suggestions = images_db.query(
+    query_embeddings=[query_embedding],
+    include=['uris','metadatas'],
+    n_results=5
+    )
+
+    #create a dictionary of the results
+
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
+                  }
+    #create a json of the dictionary
+
+    return_json = json.dumps(image_dict, indent=4)
+
+    #return the dictionary
 
     return return_json
