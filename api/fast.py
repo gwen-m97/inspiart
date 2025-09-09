@@ -31,7 +31,7 @@ import tensorflow as tf
 
 app = FastAPI()
 app.state.model = SentenceTransformer('clip-ViT-B-32')
-app.state.model_keras = keras.models.load_model("../models/model_Xception_alldata.keras")
+app.state.model_keras = keras.models.load_model("../models/model_Xception_alldata_finetuned.keras")
 
 
 # # Allow all requests (optional, good for development purposes)
@@ -101,6 +101,7 @@ async def receive_image(img: UploadFile=File(...)):
     #return the dictionary
 
     return return_json
+
 
 @app.post('/upload_same_style')
 async def receive_image(img: UploadFile=File(...)):
@@ -176,6 +177,7 @@ async def receive_image(img: UploadFile=File(...)):
 
     return return_json
 
+
 @app.post('/upload_other_style')
 async def receive_image(img: UploadFile=File(...)):
 
@@ -184,6 +186,30 @@ async def receive_image(img: UploadFile=File(...)):
     contents = img.file.read()
 
     working_image = Image.open(io.BytesIO(contents))
+
+    #GET STYLE
+
+    #styles constant
+
+    LIST_STYLES = ['Abstract Art', 'Abstract Expressionism', 'Academicism', 'Art Deco', 'Art Informel', 'Art Nouveau (Modern)', 'Biedermeier', 'Color Field Painting', 'Conceptual Art', 'Concretism', 'Contemporary', 'Contemporary Realism', 'Cubism', 'Dada', 'Divisionism', 'Expressionism', 'Fantastic Realism', 'Fauvism', 'Figurative Expressionism', 'Futurism', 'Hard Edge Painting', 'Hyper-Realism', 'Impressionism', 'Kitsch', 'Luminism', 'Lyrical Abstraction', 'Magic Realism', 'Metaphysical art', 'Minimalism', 'Native Art', 'Naturalism', 'Naïve Art (Primitivism)', 'Neo-Dada', 'Neo-Expressionism', 'Neo-Impressionism', 'Neo-Pop Art', 'Neo-Romanticism', 'Neoclassicism', 'New European Painting', 'Op Art', 'Orientalism', 'Pop Art', 'Post-Impressionism', 'Post-Painterly Abstraction', 'Precisionism', 'Realism', 'Regionalism', 'Romanticism', 'Social Realism', 'Socialist Realism', 'Surrealism', 'Symbolism', 'Synthetic Cubism', 'Tachisme', 'Tonalism', 'Transavantgarde']
+
+    #going to find the style
+
+    #PREPROCESSING
+
+    img = working_image.convert('RGB')
+    img_resized = img.resize((224, 224), Image.BICUBIC)
+    img_array = np.array(img_resized)
+    img_preprocessed = preprocess_input(img_array)
+    img_batch = np.expand_dims(img_preprocessed, axis=0)  # shape (1,224,224,3)
+
+    #PREDICTION
+
+    preds = app.state.model_keras.predict(img_batch)
+    pred_indice = preds.argmax(axis=1)[0] #Take the number
+    style_predicted = LIST_STYLES[pred_indice]
+
+    #GET IMAGES THAT MATCH WITH STYLE AND IMAGE
 
     #connect to the database
 
@@ -206,7 +232,8 @@ async def receive_image(img: UploadFile=File(...)):
     image_suggestions = images_db.query(
     query_embeddings=[query_embedding],
     include=['uris','metadatas'],
-    n_results=5
+    n_results=5,
+    where={"style": {"$ne": style_predicted}}
     )
 
     #create a dictionary of the results
