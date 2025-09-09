@@ -73,13 +73,117 @@ async def receive_image(img: UploadFile=File(...)):
     n_results=5
     )
 
+    print(image_suggestions)
+
     #create a dictionary of the results
 
-    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['url'],
-                  'image_2': image_suggestions['metadatas'][0][1]['url'],
-                  'image_3': image_suggestions['metadatas'][0][2]['url'],
-                  'image_4': image_suggestions['metadatas'][0][3]['url'],
-                  'image_5': image_suggestions['metadatas'][0][4]['url']
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
+                  }
+    #create a json of the dictionary
+
+    print(image_dict)
+
+    return_json = json.dumps(image_dict, indent=4)
+
+    print(return_json)
+
+    #return the dictionary
+
+    return return_json
+
+@app.post('/upload_style')
+async def receive_image(img: UploadFile=File(...)):
+
+    #get the image from the POST request
+
+    contents = img.file.read()
+
+    working_image = Image.open(io.BytesIO(contents))
+
+    #connect to the database
+
+    chroma_client = chromadb.CloudClient(
+        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
+        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
+        database='inspiart'
+        )
+
+    #get or create a connection
+
+    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+
+    # Use the CLIP model to encode the image
+
+    query_embedding = app.state.model.encode(working_image).tolist()
+
+    #perform the query
+
+    image_suggestions = images_db.query(
+    query_embeddings=[query_embedding],
+    include=['uris','metadatas'],
+    n_results=5
+    )
+
+    #create a dictionary of the results
+
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
+                  }
+    #create a json of the dictionary
+
+    return_json = json.dumps(image_dict, indent=4)
+
+    #return the dictionary
+
+    return return_json
+
+@app.post('/upload_not_style')
+async def receive_image(img: UploadFile=File(...)):
+
+    #get the image from the POST request
+
+    contents = img.file.read()
+
+    working_image = Image.open(io.BytesIO(contents))
+
+    #connect to the database
+
+    chroma_client = chromadb.CloudClient(
+        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
+        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
+        database='inspiart'
+        )
+
+    #get or create a connection
+
+    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+
+    # Use the CLIP model to encode the image
+
+    query_embedding = app.state.model.encode(working_image).tolist()
+
+    #perform the query
+
+    image_suggestions = images_db.query(
+    query_embeddings=[query_embedding],
+    include=['uris','metadatas'],
+    n_results=5
+    )
+
+    #create a dictionary of the results
+
+    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
+                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
+                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
+                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
+                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
                   }
     #create a json of the dictionary
 
