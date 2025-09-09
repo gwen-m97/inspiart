@@ -79,14 +79,6 @@ async def receive_image(img: UploadFile=File(...)):
     include=['uris','metadatas'],
     n_results=5
     )
-
-    #create a dictionary of the results
-
-    image_dict = {'image_1': image_suggestions['metadatas'][0][0]['img_url'],
-                  'image_2': image_suggestions['metadatas'][0][1]['img_url'],
-                  'image_3': image_suggestions['metadatas'][0][2]['img_url'],
-                  'image_4': image_suggestions['metadatas'][0][3]['img_url'],
-                  'image_5': image_suggestions['metadatas'][0][4]['img_url']
                   }
     #create a json of the dictionary
 
