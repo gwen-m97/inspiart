@@ -6,15 +6,18 @@ import PIL.Image as Image
 
 import numpy as np
 import io
-import transformers
 
-from sentence_transformers import SentenceTransformer, util
-import os
-from dotenv import load_dotenv
-import torch
+#import transformers
+from sentence_transformers import SentenceTransformer
+
+
+
+#import os
+#from dotenv import load_dotenv
+#import torch
 #import pandas as pd
-import numpy as np
-from PIL import Image
+#import numpy as np
+#from PIL import Image
 #import requests
 #import matplotlib.pyplot as plt
 
@@ -27,11 +30,11 @@ import json
 #imports for the style model
 
 from keras.applications.xception import preprocess_input
-import tensorflow as tf
+from tensorflow.keras import models
 
 app = FastAPI()
 app.state.model = SentenceTransformer('clip-ViT-B-32')
-app.state.model_keras = keras.models.load_model("../models/model_Xception_alldata_finetuned.keras")
+app.state.model_keras = models.load_model("../models/model_Xception_alldata_finetuned.keras")
 
 
 # # Allow all requests (optional, good for development purposes)
@@ -79,7 +82,7 @@ async def receive_image(img: UploadFile=File(...)):
     include=['uris','metadatas'],
     n_results=5
     )
-                  }
+
     #create a json of the dictionary
 
     image_dict = {}
