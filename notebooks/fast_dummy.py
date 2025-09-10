@@ -16,7 +16,7 @@ from tensorflow.keras import models
 
 app = FastAPI()
 app.state.model = SentenceTransformer('clip-ViT-B-32')
-app.state.model_keras = models.load_model("models/model_Xception_alldata_finetuned.keras")
+app.state.model_keras = models.load_model("./models/model_Xception_alldata_finetuned.keras")
 app.state.chroma_client = chromadb.CloudClient(
         api_key=os.environ.get("CHROMA_API_KEY"),
         tenant=os.environ.get("CHROMA_TENANT"),
