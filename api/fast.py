@@ -1,33 +1,15 @@
 import os
+# TODO: update path to use os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import Response
 import PIL.Image as Image
 
 import numpy as np
 import io
 
-#import transformers
 from sentence_transformers import SentenceTransformer
 
-
-
-#import os
-#from dotenv import load_dotenvs
-#import torch
-#import pandas as pd
-#import numpy as np
-#from PIL import Image
-#import requests
-#import matplotlib.pyplot as plt
-
 import chromadb
-#from chromadb import Documents, EmbeddingFunction, Embeddings
-#from chromadb.utils.data_loaders import ImageLoader
-
-import json
-
-#imports for the style model
 
 from keras.applications.xception import preprocess_input
 from tensorflow.keras import models
@@ -35,9 +17,13 @@ from tensorflow.keras import models
 app = FastAPI()
 app.state.model = SentenceTransformer('clip-ViT-B-32')
 app.state.model_keras = models.load_model("./models/model_Xception_alldata_finetuned.keras")
+app.state.chroma_client = chromadb.CloudClient(
+        api_key=os.environ.get("CHROMA_API_KEY"),
+        tenant=os.environ.get("CHROMA_TENANT"),
+        database='inspiart'
+        )
 
-
-# # Allow all requests (optional, good for development purposes)
+# Allow all requests (optional, good for development purposes)
 app.add_middleware(
      CORSMiddleware,
      allow_origins=["*"],  # Allows all origins
@@ -59,17 +45,9 @@ async def receive_image(img: UploadFile=File(...)):
 
     working_image = Image.open(io.BytesIO(contents))
 
-    #connect to the database
-
-    chroma_client = chromadb.CloudClient(
-        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
-        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
-        database='inspiart'
-        )
-
     #get or create a connection
 
-    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+    images_db = app.state.chroma_client.get_or_create_collection(name="wikiart_115000images")
 
     # Use the CLIP model to encode the image
 
@@ -137,17 +115,9 @@ async def receive_image(img: UploadFile=File(...)):
 
     #GET IMAGES THAT MATCH WITH STYLE AND IMAGE
 
-    #connect to the database
-
-    chroma_client = chromadb.CloudClient(
-        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
-        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
-        database='inspiart'
-        )
-
     #get or create a connection
 
-    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+    images_db = app.state.chroma_client.get_or_create_collection(name="wikiart_115000images")
 
     # Use the CLIP model to encode the image
 
@@ -216,17 +186,9 @@ async def receive_image(img: UploadFile=File(...)):
 
     #GET IMAGES THAT MATCH WITH STYLE AND IMAGE
 
-    #connect to the database
-
-    chroma_client = chromadb.CloudClient(
-        api_key='ck-H5bhqzQ2aYVxtub2XUJNrJ2QmA3GApHDg1XDvFMSDg3x',
-        tenant='153ed66b-a40a-4fd7-a05f-b9ce150bafac',
-        database='inspiart'
-        )
-
     #get or create a connection
 
-    images_db = chroma_client.get_or_create_collection(name="wikiart_115000images")
+    images_db = app.state.chroma_client.get_or_create_collection(name="wikiart_115000images")
 
     # Use the CLIP model to encode the image
 
