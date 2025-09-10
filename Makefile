@@ -111,6 +111,7 @@ docker_push:
 docker_deploy:
 	gcloud run deploy \
 		--image $(DOCKER_IMAGE_PATH):prod \
-		--memory $(GAR_MEMORY) \
+		--memory $(GCP_MEMORY) \
 		--region $(GCP_REGION) \
+		--cpu $(GCP_CPU) \
 		--env-vars-file .env.yaml

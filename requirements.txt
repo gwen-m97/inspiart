@@ -13,6 +13,6 @@ opencv-python
 python-multipart
 torch
 torchvision
-transformers
 sentence-transformers
 tensorflow
+tf-keras
