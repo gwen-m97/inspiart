@@ -88,7 +88,7 @@ async def receive_image(img: UploadFile=File(...)):
                 "style" : image_suggestions['metadatas'][0][i]['style']
                 }
 
-    final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
+    final_dict = {"style_predicted" : None, "images" : image_dict}
 
     #return the dictionary
 
