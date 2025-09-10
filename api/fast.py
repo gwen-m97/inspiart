@@ -13,7 +13,7 @@ from sentence_transformers import SentenceTransformer
 
 
 #import os
-#from dotenv import load_dotenv
+#from dotenv import load_dotenvs
 #import torch
 #import pandas as pd
 #import numpy as np
@@ -34,7 +34,7 @@ from tensorflow.keras import models
 
 app = FastAPI()
 app.state.model = SentenceTransformer('clip-ViT-B-32')
-app.state.model_keras = models.load_model("../models/model_Xception_alldata_finetuned.keras")
+app.state.model_keras = models.load_model("/home/gwenm/code/gwen-m97/inspiart/models/model_Xception_alldata_finetuned.keras")
 
 
 # # Allow all requests (optional, good for development purposes)
@@ -73,7 +73,7 @@ async def receive_image(img: UploadFile=File(...)):
 
     # Use the CLIP model to encode the image
 
-    query_embedding = app.state.model.encode(working_image).tolist()
+    query_embedding = app.state.model.encode(working_image, device="cpu").tolist()
 
     #perform the query
 
@@ -98,11 +98,9 @@ async def receive_image(img: UploadFile=File(...)):
 
     final_dict = {"style_predicted" : None, "images" : image_dict}
 
-    return_json = json.dumps(final_dict)
-
     #return the dictionary
 
-    return return_json
+    return final_dict
 
 
 
@@ -153,7 +151,7 @@ async def receive_image(img: UploadFile=File(...)):
 
     # Use the CLIP model to encode the image
 
-    query_embedding = app.state.model.encode(working_image).tolist()
+    query_embedding = app.state.model.encode(working_image, device="cpu").tolist()
 
     #perform the query
 
@@ -179,13 +177,9 @@ async def receive_image(img: UploadFile=File(...)):
 
     final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
 
-    #create a json of the dictionary
-
-    return_json = json.dumps(final_dict)
-
     #return the dictionary
 
-    return return_json
+    return final_dict
 
 
 
@@ -236,7 +230,7 @@ async def receive_image(img: UploadFile=File(...)):
 
     # Use the CLIP model to encode the image
 
-    query_embedding = app.state.model.encode(working_image).tolist()
+    query_embedding = app.state.model.encode(working_image, device="cpu").tolist()
 
     #perform the query
 
@@ -262,10 +256,6 @@ async def receive_image(img: UploadFile=File(...)):
 
     final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
 
-    #create a json of the dictionary
-
-    return_json = json.dumps(final_dict)
-
     #return the dictionary
 
-    return return_json
+    return final_dict
