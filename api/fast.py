@@ -57,24 +57,38 @@ async def receive_image(img: UploadFile=File(...)):
 
     image_suggestions = images_db.query(
     query_embeddings=[query_embedding],
-    include=['uris','metadatas'],
-    n_results=5
+    include=['uris','metadatas', 'distances'],
+    n_results=6
     )
 
-    #create a json of the dictionary
+    # Search if the image is matches with the first result as an output:
+    distances = image_suggestions['distances'][0]
 
+    is_exact_match = distances[0] < 10
+
+    #create a dictionary of the results
     image_dict = {}
 
-    for i in range(5) :
-        key=f"image_{i}"
-        image_dict[key] = {
-            "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
-            "artist" : image_suggestions['metadatas'][0][i]['artist'],
-            "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
-            "style" : image_suggestions['metadatas'][0][i]['style']
-            }
+    if is_exact_match:
+        for i in range(1,6) :
+            key=f"image_{i-1}"
+            image_dict[key] = {
+                "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+                "artist" : image_suggestions['metadatas'][0][i]['artist'],
+                "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+                "style" : image_suggestions['metadatas'][0][i]['style']
+                }
+    else :
+        for i in range(5) :
+            key=f"image_{i}"
+            image_dict[key] = {
+                "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+                "artist" : image_suggestions['metadatas'][0][i]['artist'],
+                "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+                "style" : image_suggestions['metadatas'][0][i]['style']
+                }
 
-    final_dict = {"style_predicted" : None, "images" : image_dict}
+    final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
 
     #return the dictionary
 
@@ -127,29 +141,45 @@ async def receive_image(img: UploadFile=File(...)):
 
     image_suggestions = images_db.query(
     query_embeddings=[query_embedding],
-    include=['uris','metadatas'],
-    n_results=5,
+    include=['uris','metadatas', 'distances'],
+    n_results=6,
     where={"style": style_predicted}
     )
+
+    # Search if the image is matches with the first result as an output:
+    distances = image_suggestions['distances'][0]
+
+    is_exact_match = distances[0] < 10
 
     #create a dictionary of the results
 
     image_dict = {}
 
-    for i in range(5) :
-        key=f"image_{i}"
-        image_dict[key] = {
-            "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
-            "artist" : image_suggestions['metadatas'][0][i]['artist'],
-            "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
-            "style" : image_suggestions['metadatas'][0][i]['style']
-            }
+    if is_exact_match:
+        for i in range(1,6) :
+            key=f"image_{i-1}"
+            image_dict[key] = {
+                "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+                "artist" : image_suggestions['metadatas'][0][i]['artist'],
+                "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+                "style" : image_suggestions['metadatas'][0][i]['style']
+                }
+    else :
+        for i in range(5) :
+            key=f"image_{i}"
+            image_dict[key] = {
+                "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+                "artist" : image_suggestions['metadatas'][0][i]['artist'],
+                "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+                "style" : image_suggestions['metadatas'][0][i]['style']
+                }
 
     final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
 
     #return the dictionary
 
     return final_dict
+
 
 
 
@@ -198,26 +228,86 @@ async def receive_image(img: UploadFile=File(...)):
 
     image_suggestions = images_db.query(
     query_embeddings=[query_embedding],
-    include=['uris','metadatas'],
-    n_results=5,
+    include=['uris','metadatas', 'distances'],
+    n_results=6,
     where={"style": {"$ne": style_predicted}}
     )
+
+   # Search if the image is matches with the first result as an output:
+    distances = image_suggestions['distances'][0]
+
+    is_exact_match = distances[0] < 10
 
     #create a dictionary of the results
 
     image_dict = {}
 
-    for i in range(5) :
-        key=f"image_{i}"
-        image_dict[key] = {
-            "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
-            "artist" : image_suggestions['metadatas'][0][i]['artist'],
-            "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
-            "style" : image_suggestions['metadatas'][0][i]['style']
-            }
+    if is_exact_match:
+        for i in range(1,6) :
+            key=f"image_{i-1}"
+            image_dict[key] = {
+                "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+                "artist" : image_suggestions['metadatas'][0][i]['artist'],
+                "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+                "style" : image_suggestions['metadatas'][0][i]['style']
+                }
+    else :
+        for i in range(5) :
+            key=f"image_{i}"
+            image_dict[key] = {
+                "img_url" : image_suggestions['metadatas'][0][i]['img_url'],
+                "artist" : image_suggestions['metadatas'][0][i]['artist'],
+                "file_name" : image_suggestions['metadatas'][0][i]['file_name'],
+                "style" : image_suggestions['metadatas'][0][i]['style']
+                }
 
     final_dict = {"style_predicted" : style_predicted, "images" : image_dict}
 
     #return the dictionary
 
     return final_dict
+
+
+@app.post('/samepainting_search')
+async def receive_image(img: UploadFile=File(...)):
+
+    #get the image from the POST request
+
+    contents = img.file.read()
+
+    working_image = Image.open(io.BytesIO(contents))
+
+    #get or create a connection
+
+    images_db = app.state.chroma_client.get_or_create_collection(name="wikiart_115000images")
+
+    # Use the CLIP model to encode the image
+
+    query_embedding = app.state.model.encode(working_image, device="cpu").tolist()
+
+    #perform the query
+
+    image_suggestions = images_db.query(
+    query_embeddings=[query_embedding],
+    include=['uris','metadatas', 'distances'],
+    n_results=1
+    )
+
+    # Search if the image is matches with the first result as an output:
+    distances = image_suggestions['distances'][0]
+
+    is_exact_match = distances[0] < 10
+
+    # if it matches, return its infos, else return we don't know the image
+    if is_exact_match:
+        image_dict = {
+            "artist" : image_suggestions['metadatas'][0][0]['artist'],
+            "file_name" : image_suggestions['metadatas'][0][0]['file_name']
+            }
+    else :
+        image_dict = {
+            "artist" : "Unknown artist",
+            "file_name" : "Unknown artwork"
+            }
+
+    return image_dict
