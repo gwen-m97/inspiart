@@ -74,6 +74,7 @@ def merging_metadata(df: pd.DataFrame) :
 
     return df_merged
 
+
 def data_sampling_balanced(df: pd.DataFrame, sample_size, number_styles=10):
     """
     Create a balanced sample in the dataframe:
@@ -177,7 +178,6 @@ def data_sampling_csv(df: pd.DataFrame, sample_size=200, number_styles=10) :
     file_path=f"data_sampling{sample_size}_topstyles{number_styles}.csv"
     df_sample_topstyles.to_csv(file_path, index=False)
     print(f"!! UNBALANCED DATA. Created a dataframe of {len(df_sample_topstyles)} lines across {number_styles} styles")
-
 
 
 def download_sample_df(df, destination_path) :
