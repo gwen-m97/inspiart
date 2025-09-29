@@ -18,7 +18,7 @@ The project is available through an interactive [Streamlit app](https://inspiart
 ---
 
 
-## 🚀 Features
+## Features
 - 🔎 Image-based recommendation of similar artworks
 - 🖼️ Automatic detection and classification of artistic styles
 - 📊 Interactive web interface to explore the tool
@@ -26,14 +26,14 @@ The project is available through an interactive [Streamlit app](https://inspiart
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 This project is split into two repositories:
 - [inspiart](https://github.com/gwen-m97/inspiart): core code (data preprocessing, model training, recommendation engine, API)
 - [inspiart-front](https://github.com/gwen-m97/inspiart-front): Streamlit app
 
 
 
-## 🔧 Technical Overview
+## Technical Overview
 
 ### 📂 Dataset
 - Used the **[WikiArt dataset](https://www.kaggle.com/datasets/simolopes/wikiart-all-artpieces)** from Kaggle
@@ -78,7 +78,7 @@ This project is split into two repositories:
 ---
 
 
-## 📸 Demo
+## Demo
 How to use Inspiart ?
 ![App user path](assets/Demo-pic-1.png)
 
