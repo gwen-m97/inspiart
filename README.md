@@ -86,7 +86,7 @@ How to use Inspiart ?
 [Watch the demo on YouTube](https://www.youtube.com/watch?v=uE1tRA1KkAE)
 
 Final presentation :
-📄 [View the final presentation (PDF)](assets/Inspiart_presentation.pdf)
+📄 [View the final presentation (PDF)](assets/Inspiart_final_presentation.pdf)
 
 
 
