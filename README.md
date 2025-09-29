@@ -82,6 +82,9 @@ This project is split into two repositories:
 How to use Inspiart ?
 ![App user path](assets/Demo-pic-1.png)
 
+📹 Demo Video
+[Watch the demo on YouTube](https://www.youtube.com/watch?v=uE1tRA1KkAE)
+
 Final presentation :
 📄 [View the final presentation (PDF)](assets/Inspiart_presentation.pdf)
 
