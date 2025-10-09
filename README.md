@@ -46,6 +46,14 @@ This project is split into two repositories:
         └── dataset_prep.py
 ```
 
+```bash
+└── inspiart-front
+    ├── app.py
+    └── sources
+
+```
+
+
 ---
 
 ## Technical Overview
