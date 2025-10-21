@@ -9,10 +9,9 @@
 # 🎨 Inspiart: An AI companion to inspire your art journey
 
 **Inspiart** is a machine learning–powered tool that recommends paintings similar to a given artwork. It can also detect its artistic style.
-The project is available through an interactive [Streamlit app](https://inspiart-front-ezzt5hf8yf9rfrkaevwu5w.streamlit.app/).
+The project is available through an interactive Streamlit app.
 
-
-![App Screenshot](assets/Demo-pic-2.png)
+![App Video demo short 1](assets/Short_demo_video_1.gif)
 
 
 ---
@@ -23,6 +22,8 @@ The project is available through an interactive [Streamlit app](https://inspiart
 - 🖼️ Automatic detection and classification of artistic styles
 - 📊 Interactive web interface to explore the tool
 
+
+![App Screenshot](assets/Demo-pic-2.png)
 
 ---
 
@@ -104,7 +105,8 @@ How to use Inspiart ?
 ![App user path](assets/Demo-pic-1.png)
 
 📹 Demo Video
-[Watch the demo on YouTube](https://www.youtube.com/watch?v=uE1tRA1KkAE)
+![App Video demo short 2](assets/Short_demo_video_2.gif)
+[Watch full demo on YouTube](https://www.youtube.com/watch?v=uE1tRA1KkAE)
 
 Final presentation :
 📄 [View the final presentation (PDF)](assets/Inspiart_final_presentation.pdf)
